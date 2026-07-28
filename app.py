@@ -20,6 +20,7 @@ from src.components.data_table import render_data_table
 from src.components.executive_brief import render_executive_brief
 from src.components.header import inject_global_styles, render_header
 from src.components.kpi_strip import render_kpi_strip
+from src.components.scroll_nav import render_bottom_anchor, render_top_anchor
 from src.components.sidebar_filters import render_sidebar_filters
 from src.data.loader import apply_filters
 from src.data.metrics import compute_kpis, previous_period_kpis
@@ -29,6 +30,7 @@ from src.services.insights_service import generate_executive_brief
 def main() -> None:
     # 1. Global theme + page config (must run first, before any other st.* call)
     inject_global_styles()
+    render_top_anchor()
 
     # 2. Header (the single "AURA" title on the page)
     last_refreshed = pd.Timestamp.now().strftime("%b %d, %Y %H:%M")
@@ -62,6 +64,9 @@ def main() -> None:
 
     # 6. AI Copilot
     render_copilot(filtered_df)
+
+    # 7. Bottom scroll anchor (target for the floating "go to bottom" button)
+    render_bottom_anchor()
 
 
 if __name__ == "__main__":

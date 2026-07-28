@@ -39,6 +39,14 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 [data-testid="stSidebar"] {
   background-color: var(--aura-surface) !important;
   border-right: 1px solid var(--aura-border);
+}
+
+/* Only force a comfortable width while the sidebar is actually expanded.
+   Scoping this to [aria-expanded="true"] is essential: an unscoped
+   min-width/max-width here blocks Streamlit's own collapse mechanism from
+   shrinking the sidebar to 0 when the user collapses it, leaving a "ghost"
+   gutter and preventing the main content from reclaiming the full width. */
+[data-testid="stSidebar"][aria-expanded="true"] {
   min-width: 320px !important;
   max-width: 380px !important;
 }
@@ -58,11 +66,58 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
   padding-top: 1rem;
   padding-bottom: 3rem;
   max-width: 1200px;
+  transition: max-width 0.2s ease;
+}
+
+/* When the sidebar is collapsed, let the main content actually use the
+   freed-up width instead of staying capped at the same max-width. */
+[data-testid="stSidebar"][aria-expanded="false"] ~ div .block-container {
+  max-width: 1500px;
+}
+
+/* ---- Smooth in-page scrolling for the top/bottom nav anchors ---- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- Floating top/bottom scroll navigation (enterprise-dashboard pattern) ---- */
+.aura-scroll-nav {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.aura-scroll-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--aura-surface);
+  border: 1px solid var(--aura-border);
+  box-shadow: var(--aura-shadow);
+  color: var(--aura-primary) !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.aura-scroll-nav a:hover {
+  background: var(--aura-primary-soft);
+  transform: translateY(-1px);
 }
 
 h1, h2, h3, h4, h5, h6, p, span, label, div {
   font-family: var(--aura-font);
 }
+
+
 
 /* ---- Generic card shell reused by header / KPI / brief / charts ---- */
 .aura-card {
