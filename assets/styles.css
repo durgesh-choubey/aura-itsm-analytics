@@ -1,0 +1,316 @@
+/* =========================================================================
+   AURA — light enterprise theme (Power BI / Fabric / Copilot inspired)
+   This file is the ONLY place visual theme rules live. It is injected once
+   by src/components/header.py::inject_global_styles(). No component should
+   add ad-hoc inline <style> blocks elsewhere.
+   ========================================================================= */
+
+:root {
+  --aura-bg: #F5F6F8;
+  --aura-surface: #FFFFFF;
+  --aura-surface-alt: #FAFAFB;
+  --aura-primary: #0078D4;
+  --aura-primary-hover: #106EBE;
+  --aura-primary-soft: #EFF6FC;
+  --aura-text: #323130;
+  --aura-text-secondary: #605E5C;
+  --aura-border: #E5E7EB;
+  --aura-success: #107C10;
+  --aura-warning: #D83B01;
+  --aura-danger: #A80000;
+  --aura-radius-lg: 16px;
+  --aura-radius-md: 12px;
+  --aura-radius-sm: 8px;
+  --aura-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+  --aura-font: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ---- Kill Streamlit's default dark theme wherever it leaks through ---- */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+  background-color: var(--aura-bg) !important;
+  color: var(--aura-text) !important;
+  font-family: var(--aura-font) !important;
+}
+
+[data-testid="stHeader"] {
+  background-color: transparent !important;
+}
+
+[data-testid="stSidebar"] {
+  background-color: var(--aura-surface) !important;
+  border-right: 1px solid var(--aura-border);
+  min-width: 320px !important;
+  max-width: 380px !important;
+}
+
+[data-testid="stSidebar"] * {
+  color: var(--aura-text) !important;
+}
+
+/* Multiselect ("slicer") chips: prevent wrapped chips from overlapping the
+   dropdown caret/clear icon -- give the control room to grow vertically. */
+[data-testid="stSidebar"] [data-baseweb="select"] {
+  min-height: 38px;
+}
+
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+  flex-wrap: wrap;
+  align-items: center;
+  padding-right: 2rem; /* keep chips clear of the caret/clear (x) icons */
+}
+
+[data-testid="stSidebar"] [data-baseweb="tag"] {
+  margin: 2px;
+}
+
+.block-container {
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+  max-width: 1200px;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, label, div {
+  font-family: var(--aura-font);
+}
+
+/* ---- Generic card shell reused by header / KPI / brief / charts ---- */
+.aura-card {
+  background: var(--aura-surface);
+  border: 1px solid var(--aura-border);
+  border-radius: var(--aura-radius-lg);
+  box-shadow: var(--aura-shadow);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---- Header ---- */
+.aura-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.aura-header-titleblock {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.aura-header-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--aura-radius-sm);
+  background: var(--aura-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.aura-header-name {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--aura-text);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.aura-header-subtitle {
+  font-size: 0.85rem;
+  color: var(--aura-text-secondary);
+  margin: 0.15rem 0 0 0;
+}
+
+.aura-breadcrumb {
+  font-size: 0.78rem;
+  color: var(--aura-text-secondary);
+  background: var(--aura-surface-alt);
+  border: 1px solid var(--aura-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  white-space: nowrap;
+}
+
+.aura-breadcrumb b {
+  color: var(--aura-primary);
+}
+
+/* ---- KPI strip ---- */
+.aura-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .aura-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.aura-kpi-tile {
+  background: var(--aura-surface);
+  border: 1px solid var(--aura-border);
+  border-radius: var(--aura-radius-md);
+  box-shadow: var(--aura-shadow);
+  padding: 0.95rem 1.1rem;
+}
+
+.aura-kpi-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--aura-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.35rem 0;
+}
+
+.aura-kpi-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--aura-text);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.aura-kpi-delta {
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.aura-kpi-delta.success { color: var(--aura-success); }
+.aura-kpi-delta.danger { color: var(--aura-danger); }
+.aura-kpi-delta.neutral { color: var(--aura-text-secondary); }
+
+/* ---- Executive brief ---- */
+.aura-brief-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--aura-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.aura-brief-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--aura-primary);
+  background: var(--aura-primary-soft);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.aura-brief-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--aura-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0.9rem 0 0.35rem 0;
+}
+
+.aura-brief ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.aura-brief li {
+  font-size: 0.92rem;
+  color: var(--aura-text);
+  margin-bottom: 0.3rem;
+}
+
+.aura-recommendation {
+  background: var(--aura-primary-soft);
+  border-radius: var(--aura-radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--aura-text);
+  border-left: 3px solid var(--aura-primary);
+}
+
+/* ---- Section headings above chart groups ---- */
+.aura-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--aura-text);
+  margin: 0.4rem 0 0.75rem 0;
+}
+
+/* ---- Copilot chat ---- */
+.aura-copilot-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.aura-copilot-header .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--aura-success);
+}
+
+.aura-chat-bubble-user {
+  background: var(--aura-primary);
+  color: #FFFFFF !important;
+  border-radius: var(--aura-radius-md) var(--aura-radius-md) 4px var(--aura-radius-md);
+  padding: 0.6rem 0.95rem;
+  margin: 0.4rem 0 0.4rem auto;
+  max-width: 78%;
+  font-size: 0.92rem;
+}
+
+.aura-chat-bubble-user * { color: #FFFFFF !important; }
+
+.aura-chat-bubble-assistant {
+  background: var(--aura-surface-alt);
+  border: 1px solid var(--aura-border);
+  color: var(--aura-text);
+  border-radius: var(--aura-radius-md) var(--aura-radius-md) var(--aura-radius-md) 4px;
+  padding: 0.6rem 0.95rem;
+  margin: 0.4rem auto 0.4rem 0;
+  max-width: 78%;
+  font-size: 0.92rem;
+}
+
+.aura-chat-action {
+  background: var(--aura-surface);
+  border: 1px dashed var(--aura-border);
+  border-radius: var(--aura-radius-sm);
+  padding: 0.5rem 0.8rem;
+  margin: 0.3rem auto 0.6rem 0;
+  max-width: 78%;
+  font-size: 0.82rem;
+  color: var(--aura-text-secondary);
+}
+
+.aura-chat-action b { color: var(--aura-primary); }
+
+/* ---- Buttons ---- */
+.stButton > button {
+  background: var(--aura-primary) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--aura-radius-sm) !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+.stButton > button:hover {
+  background: var(--aura-primary-hover) !important;
+}
+
+/* ---- Sidebar filter section label ---- */
+.aura-sidebar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--aura-text);
+  margin-bottom: 0.75rem;
+}
