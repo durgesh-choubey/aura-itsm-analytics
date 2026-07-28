@@ -6,11 +6,13 @@ structured summary dict used by the Executive Brief (see
 src/services/insights_service.build_structured_summary), so the assistant
 reasons over real filtered numbers instead of the raw dataset.
 
-Scope is deliberately locked down: the copilot only answers questions about
-the loaded ticket dataset (SLA, resolution, priority, categories, agents,
-countries, trends). Anything else gets a short, direct refusal instead of
-being sent to the LLM -- both to keep answers on-topic and to avoid burning
-API calls on small talk / unrelated questions.
+Scope is locked to the ticket dataset, but deliberately via a small
+BLOCKLIST of obviously-unrelated topics (weather, jokes, general knowledge,
+"who are you", etc.) rather than a keyword whitelist. A whitelist rejects
+perfectly reasonable questions like "tell me about the data" or "give me an
+overall insight" just because they don't contain a specific column name --
+the fallback/LLM answers are already grounded in the structured summary
+regardless of phrasing, so there's no need to gate on exact keywords.
 """
 
 from __future__ import annotations
@@ -27,17 +29,19 @@ _HISTORY_KEY = "aura_copilot_history"
 _OFF_TOPIC_REPLY = "I can only answer questions about this ticket dataset."
 _OFF_TOPIC_ACTION = "Try asking about SLA, resolution time, priority, categories, agents, or countries."
 
-_DATASET_KEYWORDS = (
-    "ticket", "sla", "resolution", "resolve", "resolved", "csat", "satisf",
-    "priority", "critical", "category", "state", "status", "country",
-    "agent", "assign", "open", "closed", "volume", "incident", "trend",
-    "group", "p1", "p2", "p3", "p4", "backlog", "breach", "compliance",
+# Obviously unrelated topics -- block these, allow everything else through.
+_OFF_TOPIC_PATTERNS = (
+    "weather", "joke", "poem", "song lyrics", "recipe", "capital of",
+    "president of", "prime minister", "write code", "write a python",
+    "translate", "movie", "sports score", "stock price", "news today",
+    "who are you", "how are you", "what is your name", "your favorite",
+    "tell me a story", "meaning of life",
 )
 
 
 def _is_on_topic(question: str) -> bool:
     q = question.lower()
-    return any(keyword in q for keyword in _DATASET_KEYWORDS)
+    return not any(pattern in q for pattern in _OFF_TOPIC_PATTERNS)
 
 
 def _fallback_answer(question: str, summary: dict) -> tuple[str, str]:
@@ -59,9 +63,13 @@ def _fallback_answer(question: str, summary: dict) -> tuple[str, str]:
         answer = f"{summary['open_tickets']} tickets are currently open."
         action = "Filter by State to drill in."
     else:
+        # Catch-all "tell me about the data" / "overall insight" style questions.
         top_category = summary["top_categories"][0]["category"] if summary["top_categories"] else "N/A"
-        answer = f"Top category is '{top_category}'; SLA compliance is {summary['sla_compliance_pct']}%."
-        action = "Ask about SLA, resolution time, open tickets, or CSAT."
+        answer = (
+            f"{summary['total_tickets']} tickets, {summary['sla_compliance_pct']}% SLA compliance, "
+            f"top category is '{top_category}'."
+        )
+        action = "Ask about SLA, resolution time, open tickets, or CSAT for more detail."
     return answer, action
 
 
@@ -90,13 +98,17 @@ def render_copilot(df: pd.DataFrame) -> None:
     if _HISTORY_KEY not in st.session_state:
         st.session_state[_HISTORY_KEY] = []
 
+    llm_on = llm_service.is_llm_available()
+    mode_badge = "AI (Groq)" if llm_on else "Rule-based"
+
     with st.container(border=True):
         st.markdown(
             compact_html(
-                """
+                f"""
                 <div class="aura-copilot-header">
                     <span class="dot"></span>
                     <strong>AI Copilot</strong>
+                    <span class="aura-brief-badge">{mode_badge}</span>
                     <span style="color: var(--aura-text-secondary); font-size: 0.82rem;">
                         — ask about SLA, resolution time, CSAT, or trends in the filtered data
                     </span>
@@ -105,6 +117,13 @@ def render_copilot(df: pd.DataFrame) -> None:
             ),
             unsafe_allow_html=True,
         )
+
+        if not llm_on:
+            st.caption(
+                "Running in rule-based mode -- no GROQ_API_KEY detected. If you added one to "
+                ".env, fully restart `streamlit run app.py` (not just a browser refresh); "
+                "the connection is cached for the life of the process."
+            )
 
         for turn in st.session_state[_HISTORY_KEY]:
             st.markdown(f'<div class="aura-chat-bubble-user">{turn["question"]}</div>', unsafe_allow_html=True)
@@ -118,7 +137,7 @@ def render_copilot(df: pd.DataFrame) -> None:
         else:
             summary = build_structured_summary(df)
             try:
-                if llm_service.is_llm_available():
+                if llm_on:
                     answer, action = _llm_answer(question, summary)
                 else:
                     answer, action = _fallback_answer(question, summary)

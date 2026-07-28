@@ -3,7 +3,7 @@ AURA - Automated Unified Reporting Assistant
 Entry point. Layout order (top to bottom), per spec:
 
     Header -> Data Source -> Compact KPI strip -> Executive Brief
-    -> Filters (sidebar) -> Charts -> AI Copilot
+    -> Filters (sidebar) -> Charts -> Data Table & Export -> AI Copilot
 
 This file only orchestrates; all rendering logic lives in src/components/*
 and all data/derivation logic lives in src/data/* and src/services/*.
@@ -16,6 +16,7 @@ import pandas as pd
 from src.components.charts import render_dashboard
 from src.components.copilot_chat import render_copilot
 from src.components.data_source import render_data_source_selector
+from src.components.data_table import render_data_table
 from src.components.executive_brief import render_executive_brief
 from src.components.header import inject_global_styles, render_header
 from src.components.kpi_strip import render_kpi_strip
@@ -54,6 +55,10 @@ def main() -> None:
 
     # 5. Charts
     render_dashboard(filtered_df)
+
+    # 5b. Data Table + CSV export -- same filtered_df the charts use, with a
+    #     column picker so the export matches exactly what's shown.
+    render_data_table(filtered_df)
 
     # 6. AI Copilot
     render_copilot(filtered_df)

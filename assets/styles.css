@@ -47,20 +47,11 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
   color: var(--aura-text) !important;
 }
 
-/* Multiselect ("slicer") chips: prevent wrapped chips from overlapping the
-   dropdown caret/clear icon -- give the control room to grow vertically. */
+/* Multiselect ("slicer") chips: let the control grow to a second line
+   when several chips are selected, without touching its internal layout
+   (which is what caused the placeholder text to render clipped). */
 [data-testid="stSidebar"] [data-baseweb="select"] {
-  min-height: 38px;
-}
-
-[data-testid="stSidebar"] [data-baseweb="select"] > div {
-  flex-wrap: wrap;
-  align-items: center;
-  padding-right: 2rem; /* keep chips clear of the caret/clear (x) icons */
-}
-
-[data-testid="stSidebar"] [data-baseweb="tag"] {
-  margin: 2px;
+  height: auto !important;
 }
 
 .block-container {
