@@ -61,7 +61,8 @@ def render_kpi_strip(current: KpiSnapshot, previous: KpiSnapshot | None = None) 
             delta(current.resolved_tickets, "resolved_tickets"), higher_is_better=True,
         ),
         _tile_html(
-            "SLA Compliance", format_percent(current.sla_compliance_pct),
+            "SLA Compliant",
+            f"{format_count(current.sla_compliant_tickets)} / {format_count(current.resolved_tickets)}",
             delta(current.sla_compliance_pct, "sla_compliance_pct"), higher_is_better=True,
         ),
         _tile_html(
