@@ -14,7 +14,6 @@ class KpiSnapshot:
     total_tickets: int
     resolved_tickets: int
     open_tickets: int
-    sla_compliant_tickets: int
     sla_compliance_pct: float
     avg_resolution_hours: float
     csat_pct: float | None  # None when the dataset has no survey column
@@ -35,7 +34,7 @@ def _resolution_end(df: pd.DataFrame) -> pd.Series:
 def compute_kpis(df: pd.DataFrame) -> KpiSnapshot:
     total = len(df)
     if total == 0:
-        return KpiSnapshot(0, 0, 0, 0, 0.0, 0.0, None)
+        return KpiSnapshot(0, 0, 0, 0.0, 0.0, None)
 
     resolved_mask = df["state"].isin(RESOLVED_STATES) if "state" in df.columns else pd.Series(False, index=df.index)
     resolved = int(resolved_mask.sum())
@@ -49,14 +48,12 @@ def compute_kpis(df: pd.DataFrame) -> KpiSnapshot:
     # SLA compliance: among resolved tickets, share that closed within the
     # priority's target resolution window.
     if resolved_durations.dropna().empty:
-        sla_compliant_tickets = 0
         sla_pct = 0.0
     else:
         ranks = _priority_rank(df["priority"]).reindex(duration_hours.index)
         targets = ranks.map(PRIORITY_SLA_TARGET_HOURS).fillna(DEFAULT_SLA_TARGET_HOURS)
         met = (duration_hours <= targets) & resolved_mask
-        sla_compliant_tickets = int(met.sum())
-        sla_pct = float(sla_compliant_tickets) / resolved * 100 if resolved else 0.0
+        sla_pct = float(met.sum()) / resolved * 100 if resolved else 0.0
 
     csat_pct = None
     if "customer_survey_result" in df.columns and df["customer_survey_result"].notna().any():
@@ -68,7 +65,6 @@ def compute_kpis(df: pd.DataFrame) -> KpiSnapshot:
         total_tickets=total,
         resolved_tickets=resolved,
         open_tickets=open_tickets,
-        sla_compliant_tickets=sla_compliant_tickets,
         sla_compliance_pct=sla_pct,
         avg_resolution_hours=avg_resolution,
         csat_pct=csat_pct,
